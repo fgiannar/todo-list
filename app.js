@@ -11,10 +11,12 @@
     app.use(express.bodyParser());
   });
   
-//default: get all my lists
-  app.get('/', require('./controllers/lists').getAllMine);
-//get all my list
-  app.get('/lists', require('./controllers/lists').getAllMine);
+//default: get all lists (mine and shared)
+  app.get('/', require('./controllers/lists').getAll);
+//get all lists (mine and shared)
+  app.get('/lists', require('./controllers/lists').getAll);
+ //get all my lists
+  app.get('/lists/mine', require('./controllers/lists').getAllMine);
 //get all the lists that other users share with me 
   app.get('/lists/shared', require('./controllers/lists').getAllShared);
 //get list
