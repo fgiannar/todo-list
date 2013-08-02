@@ -1,0 +1,13 @@
+{
+  "name": "singleton-shit",
+  "description": "blow~",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "~3.3.4",
+    "mongodb": "~1.3.12"
+  },
+  "devDependencies": {
+    "coffee": "0.0.1"
+  }
+}
