@@ -16,7 +16,7 @@
 				}
 				
 				//check rights
-				if ( constrains.hasRights(item.rights) )
+				if ( constrains.hasRights(req.user._id, item.rights) )
 					res.send(item);
 				else
 					res.send("Access denied");
@@ -29,7 +29,7 @@
   module.exports.getAll = function(req, res, next) {
     return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
-			collection.find( { $or: [ { rights: {$elemMatch: {user_id:"1", access:0} } }, { rights: {$elemMatch: {user_id:"1", access:1} } } ] } ).toArray(function(err, items) {
+			collection.find( { $or: [ { rights: {$elemMatch: {user_id: req.user._id, access:0} } }, { rights: {$elemMatch: {user_id: req.user._id, access:1} } } ] } ).toArray(function(err, items) {
 				if (!items) {
 					res.send("Lists not found");
 					return;
@@ -43,7 +43,7 @@
   module.exports.getAllMine = function(req, res, next) {
     return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
-			collection.find({rights: {$elemMatch:{user_id:"1", access:0}}}).toArray(function(err, items) {
+			collection.find({rights: {$elemMatch:{user_id: req.user._id, access:0}}}).toArray(function(err, items) {
 				if (!items) {
 					res.send("Lists not found");
 					return;
@@ -57,7 +57,7 @@
   module.exports.getAllShared = function(req, res, next) {
     return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
-			collection.find({rights: {$elemMatch:{user_id:"1", access:1}}}).toArray(function(err, items) {
+			collection.find({rights: {$elemMatch:{user_id: req.user._id, access:1}}}).toArray(function(err, items) {
 				if (!items) {
 					res.send("Shared lists not found");
 					return;
@@ -70,7 +70,7 @@
   
   module.exports.add = function(req, res, next) {
     var list = req.body;
-	list.rights = [{user_id:"1",access:0}];
+	list.rights = [{user_id: req.user._id,access:0}];
 	if (!list.createdAt)
 		list.createdAt = new Date;
 	list.listItems = [];
@@ -101,7 +101,7 @@
 				}
 				
 				//check rights
-				if ( !constrains.hasRights(item.rights) ) {
+				if ( !constrains.hasRights(req.user._id, item.rights) ) {
 					res.send("Access denied");
 					return;
 				}
@@ -136,7 +136,7 @@
 				}
 				
 				//check rights
-				if ( !constrains.hasRights(item.rights, 0) ) {
+				if ( !constrains.hasRights(req.user._id, item.rights, 0) ) {
 					res.send("Access denied");
 					return;
 				}
@@ -167,7 +167,7 @@
 				}
 				
 				//check rights
-				if ( !constrains.hasRights(item.rights, 0) ) {
+				if ( !constrains.hasRights(req.user._id, item.rights, 0) ) {
 					res.send("Access denied");
 					return;
 				}
