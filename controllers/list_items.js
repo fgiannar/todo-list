@@ -41,7 +41,7 @@
 		});
     });
   };
-  /
+  
     module.exports.update = function(req, res, next) {
 	var id = new mongo.BSONPure.ObjectID(req.params.id);
 	var item_id = new mongo.BSONPure.ObjectID(req.params.item_id);
