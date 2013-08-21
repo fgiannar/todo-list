@@ -29,6 +29,13 @@
   app.put('/sharelist/:id/:user_id', require('./controllers/lists').share);
 //delete list  
   app.delete('/lists/:id', require('./controllers/lists').remove);
+  
+//add list item
+  app.post('/lists/:id/items', require('./controllers/list_items').add);
+//update list item  
+  app.put('/lists/:id/items/:item_id', require('./controllers/list_items').update);
+//delete list item
+  app.delete('/lists/:id/items/:item_id', require('./controllers/list_items').remove);
 
   app.listen(3000);
 

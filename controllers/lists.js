@@ -6,10 +6,10 @@
   constrains = require('../constrains');
 
   module.exports.getById = function(req, res, next) {
-	var id = req.params.id;
+	var id = new mongo.BSONPure.ObjectID(req.params.id);
     return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
-			collection.findOne({'_id':new mongo.BSONPure.ObjectID(id)}, function(err, item) {
+			collection.findOne({'_id': new mongo.BSONPure.ObjectID(id)}, function(err, item) {
 				if (!item) {
 					res.send("List not found");
 					return;
@@ -73,6 +73,7 @@
 	list.rights = [{user_id:"1",access:0}];
 	if (!list.createdAt)
 		list.createdAt = new Date;
+	list.listItems = [];
 	return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
 			collection.insert(list, {safe:true}, function(err, result) {
@@ -88,12 +89,12 @@
   };
   
   module.exports.update = function(req, res, next) {
-	var id = req.params.id;
+	var id = new mongo.BSONPure.ObjectID(req.params.id);
     var list =req.body;
     
 	return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
-			collection.findOne({'_id':new mongo.BSONPure.ObjectID(id)}, function(err, item) {
+			collection.findOne({'_id': id}, function(err, item) {
 				if (!item) {
 					res.send("List not found");
 					return;
@@ -105,9 +106,9 @@
 					return;
 				}
 				
-				list = constrains.mergeUpdates(list, item);
+				list = constrains.mergeListUpdates(list, item);
 			
-				collection.update({'_id':new mongo.BSONPure.ObjectID(id)}, list, {safe:true}, function(err, result) {
+				collection.update({'_id': id}, list, {safe:true}, function(err, result) {
 					if (err) {
 						console.log('Error updating list: ' + err);
 						res.send({'error':'An error has occurred'});
@@ -122,13 +123,13 @@
   };
   
   module.exports.share = function(req, res, next) {
-	var id = req.params.id;
+	var id = new mongo.BSONPure.ObjectID(req.params.id);
 	var user_id = req.params.user_id;
 	var list = req.body;
 	
 	return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
-			collection.findOne({'_id':new mongo.BSONPure.ObjectID(id)}, function(err, item) {
+			collection.findOne({'_id': id}, function(err, item) {
 				if (!item) {
 					res.send("List not found");
 					return;
@@ -155,11 +156,11 @@
   };
   
   module.exports.remove = function(req, res, next) {
-	var id = req.params.id;
+	var id = new mongo.BSONPure.ObjectID(req.params.id);
 	
 	return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
-			collection.findOne({'_id':new mongo.BSONPure.ObjectID(id)}, function(err, item) {
+			collection.findOne({'_id': id}, function(err, item) {
 				if (!item) {
 					res.send("List not found");
 					return;
@@ -171,7 +172,7 @@
 					return;
 				}
 			
-				collection.remove({'_id':new mongo.BSONPure.ObjectID(id)}, {safe:true}, function(err, result) {
+				collection.remove({'_id': id}, {safe:true}, function(err, result) {
 					if (err) {
 						res.send({'error':'An error has occurred - ' + err});
 					} else {
