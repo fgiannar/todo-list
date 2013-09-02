@@ -27,6 +27,7 @@
   };
   
   module.exports.getAll = function(req, res, next) {
+  console.info(req);
     return connection(function(db) {
 		db.collection('lists', function(errCollection, collection) {
 			collection.find( { $or: [ { rights: {$elemMatch: {user_id: req.user._id, access:0} } }, { rights: {$elemMatch: {user_id: req.user._id, access:1} } } ] } ).toArray(function(err, items) {
