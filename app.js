@@ -14,7 +14,8 @@ app.configure(function () {
     app.use(express.static('public'));
     app.use(express.bodyParser());
 });
-
+//register
+app.get('/register', require('./controllers/user_auth').register);
 //default:
 app.get('/', require('./controllers/user_auth').auth_user, require('./controllers/lists').getAll);
 //get all lists (mine and shared)
@@ -30,7 +31,7 @@ app.post('/lists', require('./controllers/user_auth').auth_user, require('./cont
 //update list  
 app.put('/lists/:id', require('./controllers/user_auth').auth_user, require('./controllers/lists').update);
 //sharelist  
-app.put('/sharelist/:id/:user_id', require('./controllers/user_auth').auth_user, require('./controllers/lists').share);
+app.post('/sharelist/:id/:user_id', require('./controllers/user_auth').auth_user, require('./controllers/lists').share);
 //delete list  
 app.delete('/lists/:id', require('./controllers/user_auth').auth_user, require('./controllers/lists').remove);
 

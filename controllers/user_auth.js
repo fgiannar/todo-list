@@ -47,3 +47,41 @@ exports.auth_user = function (req, res, next) {
         });
     });
 };
+
+exports.register = function (req, res, next) {
+    var header = req.headers['authorization']; // get the header
+    if (!header) {
+        return next("Authorization needed");
+    }
+
+    var token = header.split(/\s+/).pop() || '', // and the encoded auth token
+        auth = new Buffer(token, 'base64').toString(), // convert from base64
+        parts = auth.split(/:/), // split on colon
+        email = parts[0] || '',
+        pass = parts[1] || '';
+
+    return connection(function (database) {
+        database.collection('users', function (err, collection) {
+            collection.findOne({
+                'email': email
+            }, function (err, item) {
+                if (err) {
+                    return next("An error has occured");
+                }
+
+                if (item)
+                    return next("Email exists");
+
+                collection.insert({"email": email, "password": pass}, {
+                    safe: true
+                }, function (err, result) {
+                    if (err) {
+                         return next("An error has occured");
+                    }
+                       
+                    res.send("Registration successful! Welcome " + email);
+                });
+            });
+        });
+    });
+};
