@@ -105,9 +105,6 @@ module.exports.update = function (req, res, next) {
                     'listItems._id': item_id
                 }, {
                     $set: {
-                        listItems: list_item
-                    },
-                    $set: {
                         'listItems.$': list_item
                     }
                 }, {
