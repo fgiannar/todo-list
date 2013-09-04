@@ -9,8 +9,9 @@ connection = require('../connection');
 
 exports.auth_user = function (req, res, next) {
     var header = req.headers['authorization']; // get the header
-    if (!header)
-        next("Authorization needed");
+    if (!header) {
+        return next("Authorization needed");
+    }
 
     var token = header.split(/\s+/).pop() || '', // and the encoded auth token
         auth = new Buffer(token, 'base64').toString(), // convert from base64

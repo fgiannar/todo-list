@@ -15,8 +15,7 @@ module.exports.getById = function (req, res, next) {
                 '_id': new mongo.BSONPure.ObjectID(id)
             }, function (err, item) {
                 if (!item) {
-                    res.send("List not found");
-                    return;
+                    return res.send("List not found");
                 }
 
                 //check rights
@@ -53,13 +52,11 @@ module.exports.getAll = function (req, res, next) {
                 }]
             }).toArray(function (err, items) {
                 if (err) {
-                    res.send("An error has occured");
-                    return;
+                    return res.send("An error has occured");
                 }
-                
+
                 if (!items) {
-                    res.send("Lists not found");
-                    return;
+                    return res.send("Lists not found");
                 }
                 res.send(items);
             });
@@ -79,13 +76,11 @@ module.exports.getAllMine = function (req, res, next) {
                 }
             }).toArray(function (err, items) {
                 if (err) {
-                    res.send("An error has occured");
-                    return;
+                    return res.send("An error has occured");
                 }
 
                 if (!items) {
-                    res.send("Lists not found");
-                    return;
+                    return res.send("Lists not found");
                 }
                 res.send(items);
             });
@@ -105,8 +100,7 @@ module.exports.getAllShared = function (req, res, next) {
                 }
             }).toArray(function (err, items) {
                 if (!items) {
-                    res.send("Shared lists not found");
-                    return;
+                    return res.send("Shared lists not found");
                 }
                 res.send(items);
             });
@@ -151,19 +145,16 @@ module.exports.update = function (req, res, next) {
                 '_id': id
             }, function (err, item) {
                 if (err) {
-                    res.send("An error has occured");
-                    return;
+                    return res.send("An error has occured");
                 }
 
                 if (!item) {
-                    res.send("List not found");
-                    return;
+                    return res.send("List not found");
                 }
 
                 //check rights
                 if (!constrains.hasRights(req.user._id, item.rights)) {
-                    res.send("Access denied");
-                    return;
+                    return res.send("Access denied");
                 }
 
                 list = constrains.mergeListUpdates(list, item);
@@ -199,19 +190,16 @@ module.exports.share = function (req, res, next) {
                 '_id': id
             }, function (err, item) {
                 if (err) {
-                    res.send("An error has occured");
-                    return;
+                    return res.send("An error has occured");
                 }
 
                 if (!item) {
-                    res.send("List not found");
-                    return;
+                    return res.send("List not found");
                 }
 
                 //check rights
                 if (!constrains.hasRights(req.user._id, item.rights, 0)) {
-                    res.send("Access denied");
-                    return;
+                    return res.send("Access denied");
                 }
 
                 collection.update({
@@ -250,19 +238,16 @@ module.exports.remove = function (req, res, next) {
                 '_id': id
             }, function (err, item) {
                 if (err) {
-                    res.send("An error has occured");
-                    return;
+                    return res.send("An error has occured");
                 }
 
                 if (!item) {
-                    res.send("List not found");
-                    return;
+                    return res.send("List not found");
                 }
 
                 //check rights
                 if (!constrains.hasRights(req.user._id, item.rights, 0)) {
-                    res.send("Access denied");
-                    return;
+                    return res.send("Access denied");
                 }
 
                 collection.remove({
