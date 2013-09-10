@@ -30,51 +30,53 @@ module.exports.getById = function (req, res, next) {
     });
 };
 
-module.exports.getAll = function (req, res, next) {
-    console.info(req);
-    return connection(function (db) {
-        db.collection('lists', function (errCollection, collection) {
-            collection.find({
-                $or: [{
-                    rights: {
-                        $elemMatch: {
-                            user_id: req.user._id,
-                            access: 0
-                        }
-                    }
-                }, {
-                    rights: {
-                        $elemMatch: {
-                            user_id: req.user._id,
-                            access: 1
-                        }
-                    }
-                }]
-            }).toArray(function (err, items) {
-                if (err) {
-                    return res.send("An error has occured");
-                }
-
-                if (!items) {
-                    return res.send("Lists not found");
-                }
-                res.send(items);
-            });
-        });
-    });
-};
-
-module.exports.getAllMine = function (req, res, next) {
-    return connection(function (db) {
-        db.collection('lists', function (errCollection, collection) {
-            collection.find({
+module.exports.getLists = function (req, res, next) {
+    var query;
+    switch (req.query.type) {
+        case 'mine': 
+        query = {
                 rights: {
                     $elemMatch: {
                         user_id: req.user._id,
                         access: 0
                     }
                 }
-            }).toArray(function (err, items) {
+            };
+        break;
+        case 'shared': 
+        query = {
+            rights: {
+                $elemMatch: {
+                    user_id: req.user._id,
+                    access: 1
+                }
+            }
+        };
+        break;
+        default: 
+        query = {
+            $or: [{
+                rights: {
+                    $elemMatch: {
+                        user_id: req.user._id,
+                        access: 0
+                    }
+                }
+                }, {
+                rights: {
+                    $elemMatch: {
+                        user_id: req.user._id,
+                        access: 1
+                    }
+                }
+            }]
+        };
+
+    }
+    console.info(req);
+    return connection(function (db) {
+        db.collection('lists', function (errCollection, collection) {
+            collection.find(query).toArray(function (err, items) {
                 if (err) {
                     return res.send("An error has occured");
                 }
@@ -88,25 +90,7 @@ module.exports.getAllMine = function (req, res, next) {
     });
 };
 
-module.exports.getAllShared = function (req, res, next) {
-    return connection(function (db) {
-        db.collection('lists', function (errCollection, collection) {
-            collection.find({
-                rights: {
-                    $elemMatch: {
-                        user_id: req.user._id,
-                        access: 1
-                    }
-                }
-            }).toArray(function (err, items) {
-                if (!items) {
-                    return res.send("Shared lists not found");
-                }
-                res.send(items);
-            });
-        });
-    });
-};
+
 
 module.exports.add = function (req, res, next) {
     var list = req.body;
