@@ -20,7 +20,7 @@ app.get('/register', require('./controllers/user_auth').register);
 app.all('*', require('./controllers/user_auth').auth_user);
 //default:
 app.get('/', require('./controllers/lists').getLists);
-//get all lists (mine and shared)
+//get lists 
 app.get('/lists', require('./controllers/lists').getLists);
 //get list
 app.get('/lists/:id', require('./controllers/lists').getById);
@@ -31,11 +31,14 @@ app.put('/lists/:id', require('./controllers/lists').update);
 //delete list
 app.delete('/lists/:id', require('./controllers/lists').remove);
 
+
+//get list item
+app.get('/items/:item_id', require('./controllers/list_items').getById);
 //add list item
 app.post('/lists/:id/items', require('./controllers/list_items').add);
 //update list item
-app.put('/lists/:id/items/:item_id', require('./controllers/list_items').update);
+app.put('/items/:item_id', require('./controllers/list_items').update);
 //delete list item
-app.delete('/lists/:id/items/:item_id', require('./controllers/list_items').remove);
+app.delete('/items/:item_id', require('./controllers/list_items').remove);
 
 app.listen(3000);

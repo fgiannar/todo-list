@@ -16,7 +16,7 @@ module.exports.getById = function (req, res, next) {
         db.collection('lists', function (errCollection, collection) {
             collection.findOne({
                 '_id': id
-            }, exclude_obj, function (err, item) {
+            }, function (err, item) {
                 if (!item) {
                     return res.send("List not found", 404);
                 }
