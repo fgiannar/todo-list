@@ -16,30 +16,26 @@ app.configure(function () {
 });
 //register
 app.get('/register', require('./controllers/user_auth').register);
+//authenticate before anything else
+app.all('*', require('./controllers/user_auth').auth_user);
 //default:
-app.get('/', require('./controllers/user_auth').auth_user, require('./controllers/lists').getAll);
+app.get('/', require('./controllers/lists').getLists);
 //get all lists (mine and shared)
-app.get('/lists', require('./controllers/user_auth').auth_user, require('./controllers/lists').getAll);
-//get all my lists
-app.get('/lists/mine', require('./controllers/user_auth').auth_user, require('./controllers/lists').getAllMine);
-//get all the lists that other users share with me 
-app.get('/lists/shared', require('./controllers/user_auth').auth_user, require('./controllers/lists').getAllShared);
+app.get('/lists', require('./controllers/lists').getLists);
 //get list
-app.get('/lists/:id', require('./controllers/user_auth').auth_user, require('./controllers/lists').getById);
-//new list  
-app.post('/lists', require('./controllers/user_auth').auth_user, require('./controllers/lists').add);
-//update list  
-app.put('/lists/:id', require('./controllers/user_auth').auth_user, require('./controllers/lists').update);
-//sharelist  
-app.post('/sharelist/:id/:user_id', require('./controllers/user_auth').auth_user, require('./controllers/lists').share);
-//delete list  
-app.delete('/lists/:id', require('./controllers/user_auth').auth_user, require('./controllers/lists').remove);
+app.get('/lists/:id', require('./controllers/lists').getById);
+//new list
+app.post('/lists', require('./controllers/lists').add);
+//update list
+app.put('/lists/:id', require('./controllers/lists').update);
+//delete list
+app.delete('/lists/:id', require('./controllers/lists').remove);
 
 //add list item
-app.post('/lists/:id/items', require('./controllers/user_auth').auth_user, require('./controllers/list_items').add);
-//update list item  
-app.put('/lists/:id/items/:item_id', require('./controllers/user_auth').auth_user, require('./controllers/list_items').update);
+app.post('/lists/:id/items', require('./controllers/list_items').add);
+//update list item
+app.put('/lists/:id/items/:item_id', require('./controllers/list_items').update);
 //delete list item
-app.delete('/lists/:id/items/:item_id', require('./controllers/user_auth').auth_user, require('./controllers/list_items').remove);
+app.delete('/lists/:id/items/:item_id', require('./controllers/list_items').remove);
 
 app.listen(3000);

@@ -2,27 +2,29 @@
 "use strict";
 
 
-var connection, mongo, constrains;
+var connection, mongo, constrains, exclude_obj;
 mongo = require('mongodb');
 connection = require('../connection');
 constrains = require('../constrains');
+exclude_obj = {
+    'listItems': 0
+};
 
 module.exports.getById = function (req, res, next) {
     var id = new mongo.BSONPure.ObjectID(req.params.id);
     return connection(function (db) {
         db.collection('lists', function (errCollection, collection) {
             collection.findOne({
-                '_id': new mongo.BSONPure.ObjectID(id)
-            }, function (err, item) {
+                '_id': id
+            }, exclude_obj, function (err, item) {
                 if (!item) {
-                    return res.send("List not found");
+                    return res.send("List not found", 404);
                 }
-
                 //check rights
                 if (constrains.hasRights(req.user._id, item.rights)) {
                     res.send(item);
                 } else {
-                    res.send("Access denied");
+                    res.send("Access denied", 401);
                 }
 
             });
@@ -33,17 +35,17 @@ module.exports.getById = function (req, res, next) {
 module.exports.getLists = function (req, res, next) {
     var query;
     switch (req.query.type) {
-        case 'mine': 
+    case 'mine':
         query = {
-                rights: {
-                    $elemMatch: {
-                        user_id: req.user._id,
-                        access: 0
-                    }
+            rights: {
+                $elemMatch: {
+                    user_id: req.user._id,
+                    access: 0
                 }
-            };
+            }
+        };
         break;
-        case 'shared': 
+    case 'shared':
         query = {
             rights: {
                 $elemMatch: {
@@ -53,7 +55,7 @@ module.exports.getLists = function (req, res, next) {
             }
         };
         break;
-        default: 
+    default:
         query = {
             $or: [{
                 rights: {
@@ -62,7 +64,7 @@ module.exports.getLists = function (req, res, next) {
                         access: 0
                     }
                 }
-                }, {
+            }, {
                 rights: {
                     $elemMatch: {
                         user_id: req.user._id,
@@ -73,10 +75,10 @@ module.exports.getLists = function (req, res, next) {
         };
 
     }
-    console.info(req);
+    console.info(req.user._id);
     return connection(function (db) {
         db.collection('lists', function (errCollection, collection) {
-            collection.find(query).toArray(function (err, items) {
+            collection.find(query, exclude_obj).toArray(function (err, items) {
                 if (err) {
                     return res.send("An error has occured");
                 }
@@ -94,6 +96,7 @@ module.exports.getLists = function (req, res, next) {
 
 module.exports.add = function (req, res, next) {
     var list = req.body;
+    console.log(req.body);
     list.rights = [{
         user_id: req.user._id,
         access: 0
@@ -111,8 +114,10 @@ module.exports.add = function (req, res, next) {
                         'error': 'An error has occurred'
                     });
                 } else {
+
                     console.log('Success: ' + JSON.stringify(result[0]));
-                    res.send(result[0]);
+                    delete result[0].listItems;
+                    res.send(result[0], 201);
                 }
             });
         });
@@ -122,6 +127,7 @@ module.exports.add = function (req, res, next) {
 module.exports.update = function (req, res, next) {
     var id = new mongo.BSONPure.ObjectID(req.params.id);
     var list = req.body;
+    var query;
 
     return connection(function (db) {
         db.collection('lists', function (errCollection, collection) {
@@ -133,19 +139,33 @@ module.exports.update = function (req, res, next) {
                 }
 
                 if (!item) {
-                    return res.send("List not found");
+                    return res.send("List not found", 404);
                 }
 
                 //check rights
-                if (!constrains.hasRights(req.user._id, item.rights)) {
-                    return res.send("Access denied");
-                }
+                if (req.query.user_id) {
+                    if (!constrains.hasRights(req.user._id, item.rights, 0)) {
+                        return res.send("You don't have the rights to share this list");
+                    }
 
-                list = constrains.mergeListUpdates(list, item);
+                    query = {
+                        $push: {
+                            rights: {
+                                user_id: req.query.user_id,
+                                access: 1
+                            }
+                        }
+                    };
+                } else {
+                    if (!constrains.hasRights(req.user._id, item.rights)) {
+                        return res.send("You don't have the rights to edit this list");
+                    }
+                    query = constrains.mergeListUpdates(list, item);
+                }
 
                 collection.update({
                     '_id': id
-                }, list, {
+                }, query, {
                     safe: true
                 }, function (err, result) {
                     if (err) {
@@ -155,7 +175,8 @@ module.exports.update = function (req, res, next) {
                         });
                     } else {
                         console.log('' + result + ' document(s) updated');
-                        res.send(list);
+                        delete result.listItems;
+                        res.send(result);
                     }
                 });
             });
@@ -178,13 +199,11 @@ module.exports.share = function (req, res, next) {
                 }
 
                 if (!item) {
-                    return res.send("List not found");
+                    return res.send("List not found", 404);
                 }
 
                 //check rights
-                if (!constrains.hasRights(req.user._id, item.rights, 0)) {
-                    return res.send("Access denied");
-                }
+
 
                 collection.update({
                     '_id': new mongo.BSONPure.ObjectID(id)
@@ -226,12 +245,12 @@ module.exports.remove = function (req, res, next) {
                 }
 
                 if (!item) {
-                    return res.send("List not found");
+                    return res.send("List not found", 404);
                 }
 
                 //check rights
                 if (!constrains.hasRights(req.user._id, item.rights, 0)) {
-                    return res.send("Access denied");
+                    return res.send("Access denied", 401);
                 }
 
                 collection.remove({

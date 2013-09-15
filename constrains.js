@@ -3,9 +3,10 @@
 
 
 //check rights
-module.exports.hasRights = function (rights, access) {
-    rights.some(function (elem) {
-        return (access >= 0) ? elem.user_id === "1" && elem.access === access : elem.user_id === "1";
+module.exports.hasRights = function (user_id, rights, access) {
+    user_id = JSON.stringify(user_id);
+    return rights.some(function (elem) {
+        return (access) ? user_id === JSON.stringify(elem.user_id) && elem.access === access : user_id === JSON.stringify(elem.user_id);
     });
 };
 

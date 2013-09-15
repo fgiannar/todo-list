@@ -21,12 +21,12 @@ module.exports.add = function (req, res, next) {
                     return res.send("An error has occured");
                 }
                 if (!item) {
-                    return res.send("List not found");
+                    return res.send("List not found", 404);
                 }
 
                 //check rights
                 if (!constrains.hasRights(req.user._id, item.rights)) {
-                    return res.send("Access denied");
+                    return res.send("Access denied", 401);
                 }
 
                 list_item._id = new mongo.BSONPure.ObjectID();
@@ -51,8 +51,7 @@ module.exports.add = function (req, res, next) {
                             'error': 'An error has occurred'
                         });
                     } else {
-                        console.log('' + result + ' document(s) updated');
-                        res.send(result);
+                        res.send(list_item, 201);
                     }
                 });
             });
@@ -83,13 +82,13 @@ module.exports.update = function (req, res, next) {
                 }
 
                 if (!item) {
-                    return res.send("List not found");
+                    return res.send("List not found", 404);
                 }
 
                 //check rights
                 console.log(item);
                 if (!constrains.hasRights(req.user._id, item.rights)) {
-                    return res.send("Access denied");
+                    return res.send("Access denied", 401);
                 }
 
                 list_item = constrains.mergeItemUpdates(list_item, item);
@@ -134,12 +133,12 @@ module.exports.remove = function (req, res, next) {
                 }
 
                 if (!item) {
-                    return res.send("List not found");
+                    return res.send("List not found", 404);
                 }
 
                 //check rights
                 if (!constrains.hasRights(req.user._id, item.rights)) {
-                    return res.send("Access denied");
+                    return res.send("Access denied", 401);
                 }
 
                 collection.update({

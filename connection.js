@@ -23,7 +23,7 @@ module.exports = function (cb) {
             if (error) {
                 throw new Error(error);
             }
-            //start temp code to populate db
+            /* //start temp code to populate db
             db.collection('lists', {
                 strict: true
             }, function (err, collection) {
@@ -40,7 +40,7 @@ module.exports = function (cb) {
                     populateDBUsers(db);
                 }
             });
-            //end temp code to populate db
+            //end temp code to populate db*/
             connectionInstance = databaseConnection;
             console.info('Connection established, cb()');
             cb(databaseConnection);
@@ -101,9 +101,7 @@ var populateDBLists = function (database) {
     }];
 
     database.collection('lists', function (err, collection) {
-        collection.insert(lists, {
-            safe: true
-        }, function (err, result) {});
+        collection.remove();
     });
 
 };
@@ -121,8 +119,6 @@ var populateDBUsers = function (database) {
     }];
 
     database.collection('users', function (err, collection) {
-        collection.insert(users, {
-            safe: true
-        }, function (err, result) {});
+        collection.remove();
     });
 };
