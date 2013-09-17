@@ -23,13 +23,23 @@ module.exports.getById = function (req, res, next) {
                         _id: item_id
                     }
                 }*/
-            },function (err, item) {
-               if (!item) {
+            }, function (err, item) {
+                if (err) {
+                    return res.send(err);
+                }
+                if (!item) {
                     return res.send("List item not found", 404);
                 }
                 //check rights
                 if (constrains.hasRights(req.user._id, item.rights)) {
-                    res.send(item);
+                    var ListsItemsSchema = new require('../schemas/ListItemsSchema')();
+                    var validationErrors = require('jsonschema').validate(query, ListsItemsSchema).errors;
+
+                    if (validationErrors.length > 0) {
+                        return res.send(validationErrors, 400);
+                    } else {
+                        res.send(item);
+                    }
                 } else {
                     res.send("Access denied", 401);
                 }
@@ -50,7 +60,7 @@ module.exports.add = function (req, res, next) {
                 '_id': id
             }, function (err, item) {
                 if (err) {
-                    return res.send("An error has occured");
+                    return res.send(err);
                 }
                 if (!item) {
                     return res.send("List not found", 404);
@@ -78,10 +88,7 @@ module.exports.add = function (req, res, next) {
                     safe: true
                 }, function (err, result) {
                     if (err) {
-                        console.log('Error adding list item: ' + err);
-                        res.send({
-                            'error': 'An error has occurred'
-                        });
+                        return res.send(err);
                     } else {
                         res.send(list_item, 201);
                     }
@@ -99,16 +106,18 @@ module.exports.update = function (req, res, next) {
         db.collection('lists', function (errCollection, collection) {
             collection.findOne({
                 'listItems._id': item_id
-            }, {/*
+            }, {
+                /*
                 rights: 1,
                 listItems: {
                     $elemMatch: {
                         _id: item_id
                     }
                 }
-            */}, function (err, item) {
+            */
+            }, function (err, item) {
                 if (err) {
-                    return res.send("An error has occured");
+                   return res.send(err);
                 }
 
                 if (!item) {
@@ -133,12 +142,8 @@ module.exports.update = function (req, res, next) {
                     safe: true
                 }, function (err, result) {
                     if (err) {
-                        console.log('Error updating list item: ' + err);
-                        res.send({
-                            'error': 'An error has occurred'
-                        });
+                       return res.send(err);
                     } else {
-                        console.log('' + result + ' document(s) updated');
                         res.send(list_item);
                     }
                 });
@@ -156,7 +161,7 @@ module.exports.remove = function (req, res, next) {
                 'listItems._id': item_id
             }, function (err, item) {
                 if (err) {
-                    return res.send("An error has occured");
+                   return res.send(err);
                 }
 
                 if (!item) {
@@ -169,7 +174,7 @@ module.exports.remove = function (req, res, next) {
                 }
 
                 collection.update({
-                     'listItems._id': item_id
+                    'listItems._id': item_id
                 }, {
                     $pull: {
                         'listItems': {
@@ -180,9 +185,7 @@ module.exports.remove = function (req, res, next) {
                     safe: true
                 }, function (err, result) {
                     if (err) {
-                        res.send({
-                            'error': 'An error has occurred - ' + err
-                        });
+                       return res.send(err);
                     } else {
                         console.log('' + result + ' list items(s) deleted');
                         res.send("List item deleted");

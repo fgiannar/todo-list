@@ -2,11 +2,10 @@
 "use strict";
 
 
-var connection, mongo, constrains, exclude_obj, ListsSchema;
+var connection, mongo, constrains, exclude_obj;
 mongo = require('mongodb');
 connection = require('../connection');
 constrains = require('../constrains');
-ListsSchema = require('../listsSchema');
 exclude_obj = {
     'listItems': 0
 };
@@ -18,6 +17,9 @@ module.exports.getById = function (req, res, next) {
             collection.findOne({
                 '_id': id
             }, function (err, item) {
+                if (err) {
+                    return res.send(err);
+                }
                 if (!item) {
                     return res.send("List not found", 404);
                 }
@@ -81,7 +83,7 @@ module.exports.getLists = function (req, res, next) {
         db.collection('lists', function (errCollection, collection) {
             collection.find(query, exclude_obj).toArray(function (err, items) {
                 if (err) {
-                    return res.send("An error has occured");
+                    res.send(err);
                 }
 
                 if (!items) {
@@ -111,12 +113,8 @@ module.exports.add = function (req, res, next) {
                 safe: true
             }, function (err, result) {
                 if (err) {
-                    res.send({
-                        'error': 'An error has occurred'
-                    });
+                   res.send(err);
                 } else {
-
-                    console.log('Success: ' + JSON.stringify(result[0]));
                     delete result[0].listItems;
                     res.send(result[0], 201);
                 }
@@ -146,7 +144,7 @@ module.exports.update = function (req, res, next) {
                 //check rights
                 if (req.query.user_id) {
                     if (!constrains.hasRights(req.user._id, item.rights, 0)) {
-                        return res.send("You don't have the rights to share this list");
+                        return res.send("You don't have the rights to share this list", 401);
                     }
 
                     query = {
@@ -159,54 +157,16 @@ module.exports.update = function (req, res, next) {
                     };
                 } else {
                     if (!constrains.hasRights(req.user._id, item.rights)) {
-                        return res.send("You don't have the rights to edit this list");
+                        return res.send("You don't have the rights to edit this list", 401);
                     }
                     query = constrains.mergeListUpdates(list, item);
+                    var ListsSchema = new require('../schemas/ListsSchema')();
+                    var validationErrors = require('jsonschema').validate(query, ListsSchema).errors;
+
+                    if (validationErrors.length > 0) {
+                        return res.send(validationErrors, 400);
+                    }
                 }
-// Address, to be embedded on Person
-  var addressSchema = {
-    "id": "/SimpleAddress",
-    "type": "object",
-    "properties": {
-      "lines": {
-        "type": "array",
-        "items": {"type": "string"}
-      },
-      "zip": {"type": "string"},
-      "city": {"type": "string"},
-      "country": {"type": "string", "required": true}
-    }
-  };
-
-  // Person
-  var schema = {
-    "id": "/SimplePerson",
-    "type": "object",
-    "properties": {
-      "name": {"type": "string"},
-      "address": {"$ref": "/SimpleAddress"},
-      "votes": {"type": "integer", "minimum": 1}
-    }
-  };
-
-  var p = {
-    "name": "Barack Obama",
-    "address": {
-      "lines": [ "1600 Pennsylvania Avenue Northwest" ],
-      "zip": "DC 20500",
-      "city": "Washington",
-      "country": "USA"
-    },
-    "votes": "lots"
-  };
- var validate = require('jsonschema').validate;
-  var Validator = require('jsonschema').Validator;
-  var v = new Validator();
-  v.addSchema(addressSchema, '/SimpleAddress');
-  console.log(v.validate(p, schema));
-                var validate = require('jsonschema').validate;
-                console.log(query);
-                console.log(v.validate(query, new ListsSchema()));
 
                 collection.update({
                     '_id': id
@@ -214,14 +174,10 @@ module.exports.update = function (req, res, next) {
                     safe: true
                 }, function (err, result) {
                     if (err) {
-                        console.log('Error updating list: ' + err);
-                        res.send({
-                            'error': 'An error has occurred'
-                        });
+                        res.send(err);
                     } else {
-                        console.log('' + result + ' document(s) updated');
-                        delete result.listItems;
-                        res.send(result);
+                        delete query.listItems;
+                        res.send(query);
                     }
                 });
             });
@@ -240,7 +196,7 @@ module.exports.share = function (req, res, next) {
                 '_id': id
             }, function (err, item) {
                 if (err) {
-                    return res.send("An error has occured");
+                    res.send(err);
                 }
 
                 if (!item) {
@@ -263,10 +219,7 @@ module.exports.share = function (req, res, next) {
                     safe: true
                 }, function (err, result) {
                     if (err) {
-                        console.log('Error updating list: ' + err);
-                        res.send({
-                            'error': 'An error has occurred'
-                        });
+                        res.send(err);
                     } else {
                         console.log('' + result + ' document(s) updated');
                         res.send("list shared");
@@ -304,11 +257,8 @@ module.exports.remove = function (req, res, next) {
                     safe: true
                 }, function (err, result) {
                     if (err) {
-                        res.send({
-                            'error': 'An error has occurred - ' + err
-                        });
+                       res.send(err);
                     } else {
-                        console.log('' + result + ' document(s) deleted');
                         res.send("List deleted");
                     }
                 });

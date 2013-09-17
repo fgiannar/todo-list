@@ -7,7 +7,7 @@ function ListsSchema () {
 		'type': 'object',
 		'properties': {
 			'_id': {
-				'type': 'string',
+				'type': 'object',
 				'required': true,
 				'readonly': true
 			},
@@ -17,11 +17,11 @@ function ListsSchema () {
 			},
 			'type': {
 				'type': 'string'
-				 
+
 			},
 			'description': {
 				'type': 'string'
-				 
+
 			},
 			'rights': {
 				'type': 'array',
