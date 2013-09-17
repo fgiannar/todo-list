@@ -4,10 +4,10 @@
 function ListItemsSchema () {
 	return	{
 		'id': '/ListItems',
-		'properties': 
-		{	
+		'properties':
+		{
 			'_id': {
-				'type': 'string',
+				'type': 'object',
 				'required': true,
 				'readonly': true
 			},
@@ -17,11 +17,11 @@ function ListItemsSchema () {
 			},
 			'type': {
 				'type': 'string'
-				 
+
 			},
 			'notes': {
 				'type': 'string'
-				 
+
 			},
 			'quantity': {
 				'type': 'integer',
@@ -39,7 +39,7 @@ function ListItemsSchema () {
 				'readonly': true
 			}
 		}
-		
+
 	};
 };
 
