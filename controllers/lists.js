@@ -2,10 +2,11 @@
 "use strict";
 
 
-var connection, mongo, constrains, exclude_obj;
+var connection, mongo, constrains, exclude_obj, ListsSchema;
 mongo = require('mongodb');
 connection = require('../connection');
 constrains = require('../constrains');
+ListsSchema = require('../listsSchema');
 exclude_obj = {
     'listItems': 0
 };
@@ -162,6 +163,50 @@ module.exports.update = function (req, res, next) {
                     }
                     query = constrains.mergeListUpdates(list, item);
                 }
+// Address, to be embedded on Person
+  var addressSchema = {
+    "id": "/SimpleAddress",
+    "type": "object",
+    "properties": {
+      "lines": {
+        "type": "array",
+        "items": {"type": "string"}
+      },
+      "zip": {"type": "string"},
+      "city": {"type": "string"},
+      "country": {"type": "string", "required": true}
+    }
+  };
+
+  // Person
+  var schema = {
+    "id": "/SimplePerson",
+    "type": "object",
+    "properties": {
+      "name": {"type": "string"},
+      "address": {"$ref": "/SimpleAddress"},
+      "votes": {"type": "integer", "minimum": 1}
+    }
+  };
+
+  var p = {
+    "name": "Barack Obama",
+    "address": {
+      "lines": [ "1600 Pennsylvania Avenue Northwest" ],
+      "zip": "DC 20500",
+      "city": "Washington",
+      "country": "USA"
+    },
+    "votes": "lots"
+  };
+ var validate = require('jsonschema').validate;
+  var Validator = require('jsonschema').Validator;
+  var v = new Validator();
+  v.addSchema(addressSchema, '/SimpleAddress');
+  console.log(v.validate(p, schema));
+                var validate = require('jsonschema').validate;
+                console.log(query);
+                console.log(v.validate(query, new ListsSchema()));
 
                 collection.update({
                     '_id': id
